@@ -1,6 +1,8 @@
 class UsersController < ApplicationController
   # 認証をスキップ: サインアップ（new, create）はログイン前に行うため
   allow_unauthenticated_access only: [:new, :create] 
+  before_action :is_matching_login_user, only: [:edit, :update]
+
 
   def new
     @user = User.new
@@ -23,13 +25,14 @@ class UsersController < ApplicationController
   end
 
   def edit
-    @user = User.find(params[:id])
+      @user = User.find(params[:id])
+
   end
 
   def update
     @user = User.find(params[:id])
     @user.update(user_params)
-    redirect_to user_path(@user)
+    redirect_to user_path(@user.id)
   end
 
   private
@@ -37,6 +40,13 @@ class UsersController < ApplicationController
   def user_params
     # name, email_address, password, password_confirmation を許可
     params.require(:user).permit(:name, :profile_image, :email_address, :password, :password_confirmation)
+  end
+
+  def is_matching_login_user
+    user = User.find(params[:id])
+    unless user.id == Current.user.id
+      redirect_to post_images_path
+    end
   end
 
 end
